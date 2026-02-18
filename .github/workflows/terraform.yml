@@ -1,0 +1,68 @@
+name: terraform-ci
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  terraform:
+    name: Terraform fmt/validate (+ optional plan)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: terraform/envs/dev
+
+    env:
+      AWS_REGION: ap-south-1
+      # If you set this GitHub Secret later, plan will automatically run:
+      # Settings -> Secrets and variables -> Actions -> New repository secret
+      # Name: AWS_ROLE_TO_ASSUME   Value: arn:aws:iam::<account-id>:role/<role-name>
+      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.6"
+
+      # ✅ Runs always (no AWS creds needed)
+      - name: Terraform fmt (check)
+        run: terraform fmt -check -recursive
+
+      - name: Terraform init (no backend for CI)
+        run: terraform init -backend=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+      # ✅ Plan runs ONLY after you add OIDC role secret (AWS_ROLE_TO_ASSUME)
+      - name: Configure AWS credentials (OIDC)
+        if: env.AWS_ROLE_TO_ASSUME != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform init (real backend)
+        if: env.AWS_ROLE_TO_ASSUME != ''
+        run: terraform init
+
+      - name: Terraform plan
+        if: github.event_name == 'pull_request' && env.AWS_ROLE_TO_ASSUME != ''
+        run: terraform plan -no-color
