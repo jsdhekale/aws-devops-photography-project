@@ -30,7 +30,7 @@ jobs:
       # If you set this GitHub Secret later, plan will automatically run:
       # Settings -> Secrets and variables -> Actions -> New repository secret
       # Name: AWS_ROLE_TO_ASSUME   Value: arn:aws:iam::<account-id>:role/<role-name>
-      AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_ARN }}
 
     steps:
       - name: Checkout
