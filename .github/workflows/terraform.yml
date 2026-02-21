@@ -53,16 +53,14 @@ jobs:
 
       # ✅ Plan runs ONLY after you add OIDC role secret (AWS_ROLE_TO_ASSUME)
       - name: Configure AWS credentials (OIDC)
-        if: env.AWS_ROLE_TO_ASSUME != ''
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
+            role-to-assume: arn:aws:iam::969318514380:role/GitHubActions-Terraform-Role
+            aws-region: ap-south-1
+
 
       - name: Terraform init (real backend)
-        if: env.AWS_ROLE_TO_ASSUME != ''
         run: terraform init
 
       - name: Terraform plan
-        if: github.event_name == 'pull_request' && env.AWS_ROLE_TO_ASSUME != ''
         run: terraform plan -no-color
