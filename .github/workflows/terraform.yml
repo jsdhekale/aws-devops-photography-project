@@ -27,7 +27,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: terraform/envs/dev
+        working-directory: terraform
 
     env:
       AWS_REGION: ap-south-1
