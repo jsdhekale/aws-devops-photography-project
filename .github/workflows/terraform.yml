@@ -2,14 +2,13 @@ name: terraform-ci
 
 on:
   pull_request:
-    paths:
-      - "terraform/**"
-      - ".github/workflows/terraform.yml"
+  paths:
+    - "Infra/terraform/**"
+    - ".github/workflows/terraform.yml"
   push:
-    branches: ["main"]
-    paths:
-      - "terraform/**"
-      - ".github/workflows/terraform.yml"
+  paths:
+    - "Infra/terraform/**"
+    - ".github/workflows/terraform.yml"
 
 permissions:
   contents: read
