@@ -14,6 +14,9 @@ on:
       - "terraform/**"
       - ".github/workflows/terraform.yml"
 
+  workflow_dispatch:
+      
+
 permissions:
   contents: read
   id-token: write
@@ -49,3 +52,22 @@ jobs:
 
       - name: Terraform validate
         run: terraform validate
+
+      # ✅ Plan runs ONLY after you add OIDC role secret (AWS_ROLE_TO_ASSUME)
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+            role-to-assume: arn:aws:iam::969318514380:role/GitHubActions-Terraform-Role
+            aws-region: ap-south-1
+
+
+      - name: Terraform init (real backend)
+        run: terraform init
+
+      - name: Terraform plan (PR only)
+        if: github.event_name == 'pull_request'
+        run: terraform plan -no-color
+
+      - name: Terraform apply (manual only)
+        if: github.event_name == 'workflow_dispatch'
+        run: terraform apply -auto-approve
