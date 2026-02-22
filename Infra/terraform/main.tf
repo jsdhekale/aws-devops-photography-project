@@ -6,3 +6,4 @@ resource "aws_s3_bucket" "terraform_test_bucket" {
     Environment = "dev"
   }
 }
+# CI test change
