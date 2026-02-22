@@ -1,15 +1,16 @@
 name: terraform-ci
 
 on:
-pull_request:
-  paths:
-    - "terraform/**"
-    - ".github/workflows/terraform.yml"
-
-push:
-  paths:
-    - "terraform/**"
-    - ".github/workflows/terraform.yml"
+  pull_request:
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
 
 permissions:
   contents: read
@@ -17,7 +18,7 @@ permissions:
 
 jobs:
   terraform:
-    name: Terraform fmt/validate (+ optional plan)
+    name: Terraform CI
     runs-on: ubuntu-latest
 
     defaults:
@@ -27,40 +28,21 @@ jobs:
 
     env:
       AWS_REGION: ap-south-1
-      # If you set this GitHub Secret later, plan will automatically run:
-      # Settings -> Secrets and variables -> Actions -> New repository secret
-      # Name: AWS_ROLE_TO_ASSUME   Value: arn:aws:iam::<account-id>:role/<role-name>
-      AWS_ROLE_TO_ASSUME: ${{ vars.AWS_ROLE_ARN }}
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.6.6"
+          terraform_version: 1.6.6
 
-      # ✅ Runs always (no AWS creds needed)
-      - name: Terraform fmt (check)
+      - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
-      - name: Terraform init (no backend for CI)
+      - name: Terraform Init (no backend)
         run: terraform init -backend=false
 
-      - name: Terraform validate
+      - name: Terraform Validate
         run: terraform validate
-
-      # ✅ Plan runs ONLY after you add OIDC role secret (AWS_ROLE_TO_ASSUME)
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-            role-to-assume: arn:aws:iam::969318514380:role/GitHubActions-Terraform-Role
-            aws-region: ap-south-1
-
-
-      - name: Terraform init (real backend)
-        run: terraform init
-
-      - name: Terraform plan
-        run: terraform plan -no-color
