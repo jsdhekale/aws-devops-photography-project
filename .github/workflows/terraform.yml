@@ -1,13 +1,14 @@
 name: terraform-ci
 
 on:
-  pull_request:
+pull_request:
   paths:
-    - "Infra/terraform/**"
+    - "terraform/**"
     - ".github/workflows/terraform.yml"
-  push:
+
+push:
   paths:
-    - "Infra/terraform/**"
+    - "terraform/**"
     - ".github/workflows/terraform.yml"
 
 permissions:
@@ -22,7 +23,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: terraform/envs/dev
+        working-directory: terraform
 
     env:
       AWS_REGION: ap-south-1
